@@ -80,7 +80,7 @@ public class PlaylistUpdates {
      * Define a global variable that identifies the video that will be added
      * to the new playlist.
      */
-    private static final String VIDEO_ID = "uprTLnBNDM4";
+    private static final String VIDEO_ID = "naeULqSeQvk";
 
     public static YouTube getService() throws GeneralSecurityException, IOException {
         final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -212,7 +212,7 @@ public class PlaylistUpdates {
         // that the API response should contain, and the second argument is
         // the playlist item being inserted.
         YouTube.PlaylistItems.Insert playlistItemsInsertCommand =
-                youtube.playlistItems().insert("snippet,contentDetails", playlistItem);
+                youtubeService.playlistItems().insert("snippet,contentDetails", playlistItem);
         PlaylistItem returnedPlaylistItem = playlistItemsInsertCommand.execute();
 
         // Print data from the API response and return the new playlist
