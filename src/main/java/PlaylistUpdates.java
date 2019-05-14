@@ -43,14 +43,9 @@ import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 import com.google.common.collect.Lists;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Creates a new, private playlist in the authorized user's channel and add
@@ -64,7 +59,7 @@ public class PlaylistUpdates {
      * Define a global instance of a Youtube object, which will be used
      * to make YouTube Data API requests.
      */
-    private static YouTube youtube;
+    private static ArrayList<String> video_ids = new ArrayList<>();
 
     private static    YouTube youtubeService ;
 
@@ -75,6 +70,26 @@ public class PlaylistUpdates {
     private static final String APPLICATION_NAME = "API code samples";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
+    public static void getVideoIDS(String fileName){
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
+            String currentLine = bufferedReader.readLine();
+            while (currentLine != null){
+                StringBuilder currVideoID = new StringBuilder();
+                for (int i = 0; i< currentLine.length() -1; i++){
+                    if (currentLine.charAt(i) == ','){
+                        video_ids.add(currVideoID.toString());
+                        currVideoID = new StringBuilder() ;
+                    }
+                    else {
+                        currVideoID.append(i);
+                    }
+                }
+            }
+        }catch (Exception  e){
+            System.out.println("File Read Error");
+        }
+    }
 
     /**
      * Define a global variable that identifies the video that will be added
@@ -120,19 +135,15 @@ public class PlaylistUpdates {
         try {
 
             youtubeService = getService();
-            // Authorize the request.
-           // Credential credential = Auth.authorize(scopes, "playlistupdates");
-
-            // This object is used to make YouTube Data API requests.
-            //youtube = new YouTube.Builder(Auth.HTTP_TRANSPORT, Auth.JSON_FACTORY, credential)
-              //      .setApplicationName("youtube-cmdline-playlistupdates-sample")
-                //    .build();
 
             // Create a new, private playlist in the authorized user's channel.
             String playlistId = insertPlaylist();
 
             // If a valid playlist was created, add a video to that playlist.
-            insertPlaylistItem(playlistId, VIDEO_ID);
+            getVideoIDS("links.text");
+            for (String s: video_ids) {
+                insertPlaylistItem(playlistId, s);
+            }
 
         } catch (GoogleJsonResponseException e) {
             System.err.println("There was a service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
