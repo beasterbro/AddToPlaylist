@@ -54,9 +54,9 @@ public class PlaylistUpdates {
 
     /**
      * Retrieves all of the video ID's from the inputted file and stores them in an array to be run
-     * @param fileName
+     * @param fileName the plain text file to be read from
      */
-    public static void getVideoIDS(String fileName){
+    public static void generateVideoIDS(String fileName){
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
             StringBuilder emptyBuilder = new StringBuilder();
@@ -189,7 +189,6 @@ public class PlaylistUpdates {
 
         // Print data from the API response and return the new playlist
         // item's unique playlistItem ID.
-
         System.out.println("New PlaylistItem name: " + returnedPlaylistItem.getSnippet().getTitle());
         System.out.println(" - Video id: " + returnedPlaylistItem.getSnippet().getResourceId().getVideoId());
         System.out.println(" - Posted: " + returnedPlaylistItem.getSnippet().getPublishedAt());
@@ -210,15 +209,16 @@ public class PlaylistUpdates {
         List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube");
 
         try {
-
+            //Creating a youtube instance
             youtubeService = getService();
 
             // Create a new, private playlist in the authorized user's channel.
             String playlistId = insertPlaylist();
 
-            // If a valid playlist was created, add a video to that playlist.
-            getVideoIDS("links.text");
+            // Reads the file named this from plain text and creates an array of strings from it
+            generateVideoIDS("links.text");
 
+            //adds every video parsed from the inputted file name above
             for (String s: video_ids) {
                 try {
                     insertPlaylistItem(playlistId, s);
