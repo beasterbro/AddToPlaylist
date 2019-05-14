@@ -62,11 +62,10 @@ public class PlaylistUpdates {
             StringBuilder emptyBuilder = new StringBuilder();
             String currentLine = bufferedReader.readLine();
             while (currentLine != null){
-                String[] videoIDS = currentLine.split("\\,", -1);
-                video_ids.addAll(Arrays.asList(videoIDS));
+               // video_ids.addAll(Arrays.asList(currentLine.split("\\,", -1)));
 
-               // StringBuilder currVideoID = new StringBuilder();
-              /*  for (int i = 0; i< currentLine.length() -1; i++){
+                StringBuilder currVideoID = new StringBuilder();
+                for (int i = 0; i< currentLine.length() -1; i++){
                     if (currentLine.charAt(i) == ','){
                         video_ids.add(currVideoID.toString());
                         currVideoID = emptyBuilder ;
@@ -74,10 +73,11 @@ public class PlaylistUpdates {
                     else {
                         currVideoID.append(i);
                     }
-                }*/
+                }//*/
 
                 currentLine = bufferedReader.readLine();
             }
+            bufferedReader.close();
         }catch (IOException  e){
             System.out.println("File Read Error");
         }
