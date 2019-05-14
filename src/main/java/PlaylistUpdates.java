@@ -118,8 +118,6 @@ public class PlaylistUpdates {
     }
 
 
-
-
     /**
      * Create a playlist and add it to the authorized account.
      */
