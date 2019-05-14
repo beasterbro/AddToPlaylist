@@ -13,7 +13,6 @@
  */
 
 
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -25,21 +24,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
-
-
-
-
-
-
-
-
-
-
-
-
-
-//import com.google.api.services.samples.youtube.cmdline.Auth;
-
 import com.google.api.services.youtube.model.*;
 import com.google.common.collect.Lists;
 
@@ -59,10 +43,8 @@ public class PlaylistUpdates {
      * Define a global instance of a Youtube object, which will be used
      * to make YouTube Data API requests.
      */
-    private static ArrayList<String> video_ids = new ArrayList<>();
-
-    private static    YouTube youtubeService ;
-
+    private static LinkedList<String> video_ids = new LinkedList<>();
+    private static YouTube youtubeService ;
     private static final String CLIENT_SECRETS= "client_secret.json";
     private static final Collection<String> SCOPES =
             Arrays.asList("https://www.googleapis.com/auth/youtube");
@@ -70,33 +52,43 @@ public class PlaylistUpdates {
     private static final String APPLICATION_NAME = "API code samples";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
+    /**
+     * Retrieves all of the video ID's from the inputted file and stores them in an array to be run
+     * @param fileName
+     */
     public static void getVideoIDS(String fileName){
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
+            StringBuilder emptyBuilder = new StringBuilder();
             String currentLine = bufferedReader.readLine();
             while (currentLine != null){
-                StringBuilder currVideoID = new StringBuilder();
-                for (int i = 0; i< currentLine.length() -1; i++){
+                String[] videoIDS = currentLine.split("\\,", -1);
+                video_ids.addAll(Arrays.asList(videoIDS));
+
+               // StringBuilder currVideoID = new StringBuilder();
+              /*  for (int i = 0; i< currentLine.length() -1; i++){
                     if (currentLine.charAt(i) == ','){
                         video_ids.add(currVideoID.toString());
-                        currVideoID = new StringBuilder() ;
+                        currVideoID = emptyBuilder ;
                     }
                     else {
                         currVideoID.append(i);
                     }
-                }
+                }*/
+
+                currentLine = bufferedReader.readLine();
             }
-        }catch (Exception  e){
+        }catch (IOException  e){
             System.out.println("File Read Error");
         }
     }
 
     /**
-     * Define a global variable that identifies the video that will be added
-     * to the new playlist.
+     * Build and return an authorized API client service.
+     *
+     * @return an authorized API client service
+     * @throws GeneralSecurityException, IOException
      */
-    private static final String VIDEO_ID = "naeULqSeQvk";
-
     public static YouTube getService() throws GeneralSecurityException, IOException {
         final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         Credential credential = authorize(httpTransport);
@@ -105,6 +97,12 @@ public class PlaylistUpdates {
                 .build();
     }
 
+    /**
+     * Create an authorized Credential object.
+     *
+     * @return an authorized Credential object.
+     * @throws IOException
+     */
     public static Credential authorize(final NetHttpTransport httpTransport) throws IOException {
         // Load client secrets.
         InputStream in = ApiExample.class.getResourceAsStream(CLIENT_SECRETS);
@@ -120,42 +118,7 @@ public class PlaylistUpdates {
     }
 
 
-    /**
-     * Authorize the user, create a playlist, and add an item to the playlist.
-     *
-     * @param args command line args (not used).
-     */
-    public static void main(String[] args) {
 
-        // This OAuth 2.0 access scope allows for full read/write access to the
-        // authenticated user's account.
-        List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube");
-
-
-        try {
-
-            youtubeService = getService();
-
-            // Create a new, private playlist in the authorized user's channel.
-            String playlistId = insertPlaylist();
-
-            // If a valid playlist was created, add a video to that playlist.
-            getVideoIDS("links.text");
-            for (String s: video_ids) {
-                insertPlaylistItem(playlistId, s);
-            }
-
-        } catch (GoogleJsonResponseException e) {
-            System.err.println("There was a service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.err.println("IOException: " + e.getMessage());
-            e.printStackTrace();
-        } catch (Throwable t) {
-            System.err.println("Throwable: " + t.getMessage());
-            t.printStackTrace();
-        }
-    }
 
     /**
      * Create a playlist and add it to the authorized account.
@@ -236,4 +199,47 @@ public class PlaylistUpdates {
         return returnedPlaylistItem.getId();
 
     }
+
+    /**
+     * Authorize the user, create a playlist, and add an item to the playlist.
+     *
+     * @param args command line args (not used).
+     */
+    public static void main(String[] args) {
+
+        // This OAuth 2.0 access scope allows for full read/write access to the
+        // authenticated user's account.
+        List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube");
+
+        try {
+
+            youtubeService = getService();
+
+            // Create a new, private playlist in the authorized user's channel.
+            String playlistId = insertPlaylist();
+
+            // If a valid playlist was created, add a video to that playlist.
+            getVideoIDS("links.text");
+
+            for (String s: video_ids) {
+                try {
+                    insertPlaylistItem(playlistId, s);
+                    System.out.println("Added video: " + s);
+                }catch (GoogleJsonResponseException e){
+                    System.out.println(e + "\nThis video is no longer available: " + s);
+                }
+            }
+
+        } catch (GoogleJsonResponseException e) {
+            System.err.println("There was a service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("IOException: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Throwable t) {
+            System.err.println("Throwable: " + t.getMessage());
+            t.printStackTrace();
+        }
+    }
+
 }
